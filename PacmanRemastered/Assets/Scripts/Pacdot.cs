@@ -4,10 +4,6 @@ using UnityEngine;
 
 public class Pacdot : MonoBehaviour
 {
-    private void Awake()
-    {
-        
-    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -15,6 +11,7 @@ public class Pacdot : MonoBehaviour
         {
             Debug.Log("coll");
             Destroy(gameObject);
+            GameManager.Score += 10;
         }
     }
 }
