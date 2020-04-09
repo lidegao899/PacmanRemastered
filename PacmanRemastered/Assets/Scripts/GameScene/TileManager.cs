@@ -122,7 +122,7 @@ public class TileManager : MonoBehaviour
         }
     }
 
-    public int Index(int x, int y)
+    private int Index(int x, int y)
     {
         x = x < 1 ? 1 : x;
         x = x > gridWidth ? gridWidth : x;
@@ -132,9 +132,13 @@ public class TileManager : MonoBehaviour
         return (gridHigh - y) * gridWidth + x - 1;
     }
 
+    public Tile GetTileByPos(Vector3 pos)
+    {
+        return tiles[Index((int)(pos.x + .499f), (int)(pos.y + .499f))];
+    }
+
     public float GetTileDistance(Tile tile1, Tile tile2)
     {
         return Mathf.Sqrt(Mathf.Pow(tile1.X - tile1.X, 2) + Mathf.Pow(tile1.Y + tile2.Y, 2));
     }
 }
-2

@@ -1,18 +1,35 @@
-﻿using System.Collections;
+﻿﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GhostMovement : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private Vector3 wayPoint;
+    private Queue<Vector3> wayPoints;
+
+    private Vector3 _direction;
+
+    public Vector3 Direction
     {
-        
+        get { return _direction; }
+        set { _direction = value; }
     }
 
-    // Update is called once per frame
+
     void Update()
     {
         
     }
+
+    public void AILogic()
+    { 
+    
+    }
+
+    public void RunLogic()
+    { 
+    
+    }
+
+
 }
