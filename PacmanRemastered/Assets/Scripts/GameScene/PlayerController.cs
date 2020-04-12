@@ -13,8 +13,7 @@ public class PlayerController : MonoBehaviour
 
     Animator animator;
 
-    [SerializeField]
-    private float moveSpeed;
+    public float moveSpeed;
     Rigidbody2D rigidbody2D;
 
     private void Awake()
