@@ -46,24 +46,31 @@ public class GhostAI : MonoBehaviour
         {
             float shortstDis = float.MaxValue;
 
-            if (currentTile.up != null && ghostMovement.Direction != Vector3.down && shortstDis > tileManager.GetTileDistance(currentTile, currentTile.up))
+            Vector3 dir = ghostMovement.Direction;
+
+            if (currentTile.up != null && ghostMovement.Direction != Vector3.down && shortstDis > tileManager.GetTileDistance(targetTile, currentTile.up))
             {
                 ghostMovement.Direction = Vector3.up;
-                shortstDis = tileManager.GetTileDistance(currentTile, currentTile.up);
+                shortstDis = tileManager.GetTileDistance(targetTile, currentTile.up);
             }
-            if (currentTile.right != null && ghostMovement.Direction != Vector3.left && shortstDis > tileManager.GetTileDistance(currentTile, currentTile.right))
+            if (currentTile.right != null && ghostMovement.Direction != Vector3.left && shortstDis > tileManager.GetTileDistance(targetTile, currentTile.right))
             {
                 ghostMovement.Direction = Vector3.right;
-                shortstDis = tileManager.GetTileDistance(currentTile, currentTile.right);
+                shortstDis = tileManager.GetTileDistance(targetTile, currentTile.right);
             }
-            if (currentTile.left != null && ghostMovement.Direction != Vector3.right && shortstDis > tileManager.GetTileDistance(currentTile, currentTile.left))
+            if (currentTile.left != null && ghostMovement.Direction != Vector3.right && shortstDis > tileManager.GetTileDistance(targetTile, currentTile.left))
             {
                 ghostMovement.Direction = Vector3.left;
-                shortstDis = tileManager.GetTileDistance(currentTile, currentTile.left);
+                shortstDis = tileManager.GetTileDistance(targetTile, currentTile.left);
             }
-            if (currentTile.down != null && ghostMovement.Direction != Vector3.up && shortstDis > tileManager.GetTileDistance(currentTile, currentTile.down))
+            if (currentTile.down != null && ghostMovement.Direction != Vector3.up && shortstDis > tileManager.GetTileDistance(targetTile, currentTile.down))
             {
                 ghostMovement.Direction = Vector3.down;
+            }
+
+            if (dir.Equals(ghostMovement.Direction))
+            {
+                Debug.Log("dir change");
             }
         }
         else
@@ -85,7 +92,7 @@ public class GhostAI : MonoBehaviour
         switch (name)
         {
             case "blinky": // target=pacman
-                targetPos = new Vector3(transform.position.x, transform.position.y);
+                targetPos = new Vector3(target.transform.position.x, target.transform.position.y);
                 _targetTile = tileManager.GetTileByPos(targetPos);
                 break;
             default:

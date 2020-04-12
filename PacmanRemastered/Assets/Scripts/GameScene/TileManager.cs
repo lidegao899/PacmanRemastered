@@ -139,6 +139,6 @@ public class TileManager : MonoBehaviour
 
     public float GetTileDistance(Tile tile1, Tile tile2)
     {
-        return Mathf.Sqrt(Mathf.Pow(tile1.X - tile1.X, 2) + Mathf.Pow(tile1.Y + tile2.Y, 2));
+        return Mathf.Sqrt(Mathf.Pow(tile1.X - tile1.X, 2) + Mathf.Pow(tile1.Y - tile2.Y, 2));
     }
 }
