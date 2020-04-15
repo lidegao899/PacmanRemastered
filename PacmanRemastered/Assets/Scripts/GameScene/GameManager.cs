@@ -22,6 +22,17 @@ public class GameManager : MonoBehaviour
     private GameObject pacman;
     private GameObject blinky;
 
+    [SerializeField]
+    private float _scareTimeLength = 7f;
+
+    private float _timeToCalm = 0f;
+    private bool scared;
+
+    public float ScareTimeLength
+    {
+        get { return _scareTimeLength; }
+    }
+
     public static GameManager Instance
     {
         get
@@ -33,6 +44,21 @@ public class GameManager : MonoBehaviour
             }
             return _instance;
         }
+    }
+
+    public void ScareGhosts()
+    {
+        scared = true;
+
+        blinky.GetComponent<GhostMovement>().Frighten();
+        _timeToCalm = Time.time + ScareTimeLength;
+    }
+
+    public void CalmGhost()
+    {
+        scared = false;
+
+        blinky.GetComponent<GhostMovement>().Calm();
     }
 
     private void Awake()
@@ -56,6 +82,14 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         gameState = GameState.Init;
+    }
+
+    private void Update()
+    {
+        if (scared && Time.time > _timeToCalm)
+        {
+            CalmGhost();
+        }
     }
 
     private void OnLevelWasLoaded(int level)

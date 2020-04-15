@@ -9,7 +9,6 @@ public class Pacdot : MonoBehaviour
     {
         if (collision.name.Equals("pacman"))
         {
-            Debug.Log("coll");
             Destroy(gameObject);
             GameManager.Score += 10;
         }

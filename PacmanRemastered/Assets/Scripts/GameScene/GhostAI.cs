@@ -75,13 +75,57 @@ public class GhostAI : MonoBehaviour
         }
         else
         {
-                ghostMovement.Direction = ghostMovement.Direction;
+            ghostMovement.Direction = ghostMovement.Direction;
         }
     }
 
     public void RunLogic()
     {
+        // get current pos
+        Vector3 currentPos = new Vector3(transform.position.x + .499f, transform.position.y + .499f);
+        TileManager.Tile currentTile = tileManager.GetTileByPos(currentPos);
 
+        nextTile = tileManager.GetTileByPos(currentPos + ghostMovement.Direction);
+
+        if (nextTile.Occupied)
+        {
+            if (ghostMovement.Direction == Vector3.left || ghostMovement.Direction == Vector3.right)
+            {
+                ghostMovement.Direction = currentTile.down == null ? Vector3.up : Vector3.down;
+            }
+            else
+            {
+                ghostMovement.Direction = currentTile.left == null ? Vector3.right : Vector3.left;
+            }
+        }
+        else if (currentTile.IsIntersection)
+        {
+            List<Vector3> availableDir = new List<Vector3>();
+
+            if (currentTile.up != null && currentTile.up.Occupied == false && ghostMovement.Direction != Vector3.down)
+            {
+                availableDir.Add(Vector3.up); 
+            }
+            if (currentTile.down != null && currentTile.down.Occupied == false && ghostMovement.Direction != Vector3.up)
+            {
+                availableDir.Add(Vector3.down);
+            }
+            if (currentTile.left != null && currentTile.left.Occupied == false && ghostMovement.Direction != Vector3.right)
+            {
+                availableDir.Add(Vector3.left);
+            }
+            if (currentTile.right != null && currentTile.right.Occupied == false && ghostMovement.Direction != Vector3.left)
+            {
+                availableDir.Add(Vector3.right);
+            }
+
+            int randIndex = Random.Range(0, availableDir.Count);
+            ghostMovement.Direction = availableDir[randIndex];
+        }
+        else
+        {
+            ghostMovement.Direction = ghostMovement.Direction;
+        }
     }
 
     TileManager.Tile GetTargetTile()

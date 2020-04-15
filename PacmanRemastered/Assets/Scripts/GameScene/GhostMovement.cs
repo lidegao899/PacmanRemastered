@@ -17,19 +17,25 @@ public class GhostMovement : MonoBehaviour
     public Vector3 Direction
     {
         get { return _direction; }
-        set 
+        set
         {
             _direction = value;
             Vector3 pos = new Vector3((int)transform.position.x, (int)transform.position.y);
             wayPoint = pos + _direction;
+
+            if (target == null)
+            {
+                return;
+            }
+
             target.transform.position = wayPoint;
         }
     }
 
     public float moveSpeed = 0.3f;
 
-    enum State { Wait, Init, Scatter, Chase, Run }
-    State state;
+    enum GhostState { Wait, Init, Scatter, Chase, Scare }
+    GhostState state;
 
     private Vector3 startPos;
 
@@ -38,10 +44,18 @@ public class GhostMovement : MonoBehaviour
     [SerializeField]
     private float scatterTimeLength = 5f;
 
+    [SerializeField]
+    private float scareTimeLength = 7f;
+
     private float timeToEndScatter;
+
     private float timeToEndWait;
 
     private Rigidbody2D rigidbody2D;
+
+    private bool isWhite = false;
+    private float _timeToTurnColor;
+    private float _timeToTurnColorInterval = 0.5f;
 
     private void Awake()
     {
@@ -58,30 +72,57 @@ public class GhostMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-
-        if (GameManager.gameState == GameManager.GameState.Game)
-        {
-            animate();
-        }
+        animate();
 
         switch (state)
         {
-            case State.Wait:
+            case GhostState.Wait:
                 Wait();
                 break;
-            case State.Init:
+            case GhostState.Init:
                 Init();
                 break;
-            case State.Scatter:
+            case GhostState.Scatter:
                 Scatter();
                 break;
-            case State.Chase:
+            case GhostState.Chase:
                 Chase();
                 break;
-            case State.Run:
+            case GhostState.Scare:
+                Run();
                 break;
             default:
                 break;
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!collision.name.Equals("pacman"))
+        {
+            return;
+        }
+
+        if (state == GhostState.Scare)
+        {
+            Calm();
+        }
+        else
+        {
+            gameManager.LostLife();
+        }
+    }
+
+    private void Run()
+    {
+        if (Vector3.Distance(transform.position, wayPoint) > 0.0001f)
+        {
+            Vector2 pos = Vector2.MoveTowards(transform.position, wayPoint, moveSpeed);
+            GetComponent<Rigidbody2D>().MovePosition(pos);
+        }
+        else
+        {
+            GetComponent<GhostAI>().RunLogic();
         }
     }
 
@@ -90,7 +131,7 @@ public class GhostMovement : MonoBehaviour
         if (Time.time > timeToEndScatter)
         {
             wayPoints.Clear();
-            state = State.Chase;
+            state = GhostState.Chase;
             return;
         }
 
@@ -110,9 +151,46 @@ public class GhostMovement : MonoBehaviour
         }
     }
 
+    internal void Frighten()
+    {
+        state = GhostState.Scare;
+        _direction *= -1;
+        GetComponent<Animator>().SetBool("Run", true);
+    }
+
+    public void Calm()
+    {
+        if (state != GhostState.Scare)
+        {
+            return;
+        }
+
+        wayPoints.Clear();
+        state = GhostState.Chase;
+
+        //GetComponent<Animator>().SetBool("Run_White", false);
+        GetComponent<Animator>().SetBool("Run", false);
+    }
+
+    private void ToggleSkinColor()
+    {
+        if (Time.time < _timeToTurnColor)
+        {
+            return;
+        }
+
+        isWhite = !isWhite;
+
+        GetComponent<Animator>().SetBool("Run_White", isWhite);
+
+        _timeToTurnColor = Time.time + _timeToTurnColorInterval;
+
+        Debug.Log("color turn" + isWhite);
+    }
+
     private void Wait()
     {
-        state = State.Init;
+        state = GhostState.Init;
         wayPoints.Clear();
         InitWayPoints(state);
         MoveToWayPoints(true);
@@ -122,7 +200,7 @@ public class GhostMovement : MonoBehaviour
     {
         if (wayPoints.Count == 0)
         {
-            state = State.Scatter;
+            state = GhostState.Scatter;
             InitWayPoints(state);
             timeToEndScatter = Time.time + scatterTimeLength;
             return;
@@ -130,24 +208,7 @@ public class GhostMovement : MonoBehaviour
         MoveToWayPoints();
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (!collision.name.Equals("pacman"))
-        {
-            return;
-        }
-
-        if (state == State.Run)
-        {
-            Calm();
-        }
-        else
-        {
-            gameManager.LostLife();
-        }
-    }
-
-    private void InitWayPoints(State state)
+    private void InitWayPoints(GhostState state)
     {
         string data = "";
         switch (name)
@@ -208,7 +269,7 @@ public class GhostMovement : MonoBehaviour
         wayPoints.Clear();
         switch (state)
         {
-            case State.Wait:
+            case GhostState.Wait:
                 Vector3 pos = transform.position;
 
                 // inky and clyde start going down and then up
@@ -224,15 +285,15 @@ public class GhostMovement : MonoBehaviour
                     wayPoints.Enqueue(new Vector3(pos.x, pos.y - 0.5f, 0f));
                 }
                 break;
-            case State.Init:
+            case GhostState.Init:
                 UpdateWayPoints(data, false);
                 break;
-            case State.Scatter:
+            case GhostState.Scatter:
                 UpdateWayPoints(data, true);
                 break;
-            case State.Chase:
+            case GhostState.Chase:
                 break;
-            case State.Run:
+            case GhostState.Scare:
                 break;
             default:
                 break;
@@ -263,14 +324,10 @@ public class GhostMovement : MonoBehaviour
         }
     }
 
-    private void Calm()
-    {
-    }
-
     private void InItGhost()
     {
         wayPoint = transform.position;
-        state = State.Wait;
+        state = GhostState.Wait;
         InitWayPoints(state);
     }
 
@@ -305,10 +362,21 @@ public class GhostMovement : MonoBehaviour
 
     void animate()
     {
-        Vector3 dir = wayPoint - transform.position;
-        GetComponent<Animator>().SetFloat("DirX", dir.x);
-        GetComponent<Animator>().SetFloat("DirY", dir.y);
-        GetComponent<Animator>().SetBool("Run", false);
+        switch (state)
+        {
+            case GhostState.Scare:
+                ToggleSkinColor();
+                break;
+            default:
+                if (GameManager.gameState == GameManager.GameState.Game)
+                {
+                }
+                Vector3 dir = wayPoint - transform.position;
+                GetComponent<Animator>().SetFloat("DirX", dir.x);
+                GetComponent<Animator>().SetFloat("DirY", dir.y);
+                GetComponent<Animator>().SetBool("Run", false);
+                break;
+        }
     }
 
     private Vector3 getStartPosAccordingToName()
