@@ -84,6 +84,37 @@ public class GameManager : MonoBehaviour
         gameState = GameState.Init;
     }
 
+    public int[] SortedSquares(int[] A)
+    {
+
+        int[] arr = new int[A.Length];
+
+        int leftIndex = 0, rightIndex = A.Length;
+
+        int leftV = A[leftIndex], rightV = A[rightIndex];
+
+        int curIndex = A.Length;
+
+        for (int i = 0; i < A.Length; i++)
+        {
+            if (leftV > rightV)
+            {
+                arr[curIndex] = leftV;
+                leftIndex++;
+                leftV = arr[curIndex] * arr[curIndex];
+            }
+            else
+            {
+                arr[curIndex] = rightV;
+                rightV--;
+                rightV = arr[curIndex] * arr[curIndex];
+            }
+            curIndex--;
+        }
+
+        return arr;
+    }
+
     private void Update()
     {
         if (scared && Time.time > _timeToCalm)

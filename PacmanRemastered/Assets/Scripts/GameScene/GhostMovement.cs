@@ -74,6 +74,11 @@ public class GhostMovement : MonoBehaviour
     {
         animate();
 
+        if (GameManager.gameState != GameManager.GameState.Game)
+        {
+            return;
+        }
+
         switch (state)
         {
             case GhostState.Wait:
@@ -368,9 +373,6 @@ public class GhostMovement : MonoBehaviour
                 ToggleSkinColor();
                 break;
             default:
-                if (GameManager.gameState == GameManager.GameState.Game)
-                {
-                }
                 Vector3 dir = wayPoint - transform.position;
                 GetComponent<Animator>().SetFloat("DirX", dir.x);
                 GetComponent<Animator>().SetFloat("DirY", dir.y);
