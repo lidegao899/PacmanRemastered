@@ -51,6 +51,9 @@ public class GhostMovement : MonoBehaviour
 
     private float timeToEndWait;
 
+    [SerializeField]
+    private float waitTime;
+
     private Rigidbody2D rigidbody2D;
 
     private bool isWhite = false;
@@ -114,7 +117,7 @@ public class GhostMovement : MonoBehaviour
         }
         else
         {
-            gameManager.LostLife();
+            gameManager.PlayerDead();
         }
     }
 
@@ -156,6 +159,16 @@ public class GhostMovement : MonoBehaviour
         }
     }
 
+    internal void Initialize()
+    {
+        wayPoint = transform.position;
+        state = GhostState.Wait;
+
+        timeToEndWait = Time.time + waitTime;
+
+        InitWayPoints(state);
+    }
+
     internal void Frighten()
     {
         state = GhostState.Scare;
@@ -173,6 +186,7 @@ public class GhostMovement : MonoBehaviour
         wayPoints.Clear();
         state = GhostState.Chase;
 
+        _timeToTurnColor = 0;
         //GetComponent<Animator>().SetBool("Run_White", false);
         GetComponent<Animator>().SetBool("Run", false);
     }
@@ -195,9 +209,14 @@ public class GhostMovement : MonoBehaviour
 
     private void Wait()
     {
+        if (Time.time < timeToEndWait)
+        {
+            return;
+        }
         state = GhostState.Init;
         wayPoints.Clear();
         InitWayPoints(state);
+
         MoveToWayPoints(true);
     }
 

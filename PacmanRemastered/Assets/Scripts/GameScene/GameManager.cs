@@ -7,6 +7,8 @@ public class GameManager : MonoBehaviour
 {
     private static GameManager _instance;
 
+    private GUIManager uiManager;
+
     public enum GameState { Init, Game, Dead, Scores }
     public static GameState gameState;
 
@@ -54,6 +56,14 @@ public class GameManager : MonoBehaviour
         _timeToCalm = Time.time + ScareTimeLength;
     }
 
+    internal static void DestroySelf()
+    {
+        Score = 0;
+        Level = 0;
+        Lives = 3;
+        Destroy(GameObject.Find("Game Manager"));
+    }
+
     public void CalmGhost()
     {
         scared = false;
@@ -77,6 +87,7 @@ public class GameManager : MonoBehaviour
         }
 
         AssignGhosts();
+        uiManager = GameObject.Find("UIManager").GetComponent<GUIManager>();
     }
 
     private void Start()
@@ -140,16 +151,29 @@ public class GameManager : MonoBehaviour
         blinky = GameObject.Find("blinky");
     }
 
-    public void LostLife()
+    public void PlayerDead()
     {
-        throw new NotImplementedException();
+        Lives--;
+        gameState = GameState.Dead;
+
+        uiManager.UpdateLife(Lives);
     }
 
     public void ResetScene()
     {
+        CalmGhost();
+
         pacman.transform.position = new Vector3(15f, 11f, 0f);
         blinky.transform.position = new Vector3(15f, 20f, 0f);
+        blinky.GetComponent<GhostMovement>().Initialize();
 
         gameState = GameState.Init;
+
+        uiManager.ShowReadyScreen();
+    }
+
+    public void GameOver()
+    {
+        uiManager.ShowGameOverScreen();
     }
 }

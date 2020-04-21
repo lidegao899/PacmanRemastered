@@ -16,6 +16,11 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     Rigidbody2D rigidbody2D;
 
+    [SerializeField]
+    private Vector2 initPos;
+
+    private bool _deadPlaying = false;
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -24,26 +29,40 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector2 newPos = Vector2.MoveTowards(transform.position, _dest, moveSpeed);
-        rigidbody2D.MovePosition(newPos);
-
-        // get the next direction from keyboard
-        if (Input.GetAxis("Horizontal") > 0) _nextDir = Vector2.right;
-        if (Input.GetAxis("Horizontal") < 0) _nextDir = Vector2.left;
-        if (Input.GetAxis("Vertical") > 0) _nextDir = Vector2.up;
-        if (Input.GetAxis("Vertical") < 0) _nextDir = Vector2.down;
-
-        if (IsValid(_nextDir))
+        switch (GameManager.gameState)
         {
-            _dest = (Vector2)transform.position + _nextDir;
-            _curDir = _nextDir;
-        }
-        else if (IsValid(_curDir))
-        {
-            _dest = (Vector2)transform.position + _curDir;
-        }
+            case GameManager.GameState.Game:
+                Vector2 newPos = Vector2.MoveTowards(transform.position, _dest, moveSpeed);
+                rigidbody2D.MovePosition(newPos);
 
-        UpdateAnimate();
+                // get the next direction from keyboard
+                if (Input.GetAxis("Horizontal") > 0) _nextDir = Vector2.right;
+                if (Input.GetAxis("Horizontal") < 0) _nextDir = Vector2.left;
+                if (Input.GetAxis("Vertical") > 0) _nextDir = Vector2.up;
+                if (Input.GetAxis("Vertical") < 0) _nextDir = Vector2.down;
+
+                if (IsValid(_nextDir))
+                {
+                    _dest = (Vector2)transform.position + _nextDir;
+                    _curDir = _nextDir;
+                }
+                else if (IsValid(_curDir))
+                {
+                    _dest = (Vector2)transform.position + _curDir;
+                }
+
+                UpdateAnimate();
+                break;
+            case GameManager.GameState.Dead:
+                if (!_deadPlaying)
+                {
+                    StartCoroutine("PlayDeadAnimation");
+                }
+                break;
+            default:
+                break;
+        }
+       
     }
 
     private bool IsValid(Vector2 direction)
@@ -63,5 +82,33 @@ public class PlayerController : MonoBehaviour
         Vector2 dir = _dest - (Vector2)transform.position;
         animator.SetFloat("DirX", dir.x);
         animator.SetFloat("DirY", dir.y);
+    }
+
+    IEnumerator PlayDeadAnimation()
+    {
+        _deadPlaying = true;
+
+        animator.SetBool("Die", true);
+        yield return new WaitForSeconds(1);
+        animator.SetBool("Die", false);
+
+        _deadPlaying = false;
+
+        if (GameManager.Lives <= 0)
+        {
+            GameManager.Instance.GameOver();
+        }
+        else
+        {
+            GameManager.Instance.ResetScene();
+        }
+    }
+
+    private void ResetPlayer()
+    {
+        _nextDir = initPos;
+        _dest = transform.position;
+        animator.SetFloat("DirX", 1);
+        animator.SetFloat("DirY", 0);
     }
 }
